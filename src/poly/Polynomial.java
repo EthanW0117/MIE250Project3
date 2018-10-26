@@ -1,6 +1,10 @@
 package poly;
 
+import java.io.BufferedReader;
+
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -50,8 +54,10 @@ public class Polynomial {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (Term term : _terms) {
+//			(!(term.getCoef() == 0)){
 			sb.append((first ? "" : " + ") + term);
 			first = false;
+//			}
 		}
 		return sb.toString();
 	}
@@ -61,6 +67,9 @@ public class Polynomial {
 	//       the implementation of the methods below.
 	///////////////////////////////////////////////////////////////////////////////
 
+	public void addTerm(Term newTerm) {
+		_terms.add(newTerm);
+	}
 	/** This method takes a file (e.g., new File("files/poly1.txt")) which on its
 	 *  first line should contain a syntactically correct Polynomial as parsed by 
 	 *  new Polynomial(String s) above and return that Polynomial.
@@ -71,20 +80,41 @@ public class Polynomial {
 	 * @return
 	 * @throws PolyException if there were any errors reading or parsing the file
 	 */
-	public static Polynomial ReadPolynomial(File file) throws PolyException {
-
-		// TODO: Should not return null!
-		return null;
+	public static Polynomial ReadPolynomial(File file) throws PolyException, IOException { 
+		try {
+			BufferedReader fin = new BufferedReader(new FileReader(file));
+			String line = fin.readLine();
+			fin.close();
+			Polynomial p = new Polynomial(line);
+			
+			return p;
+			
+		}
+		catch (IOException e) {
+			throw new PolyException("File not found : could not read file " + file + " with absolute path " + file.getAbsolutePath());
+		}
+		catch (PolyException e) {
+			throw new PolyException("Empty Polynomial, cannot read");
+		}
+		// TODO: Should not return null;
 	}
 	
 	/** Returns all of the variables used in this Polynomial as a sorted set (TreeSet).
 	 * 
 	 * @return (TreeSet of Strings as defined above)
 	 */
-	public TreeSet<String> getAllVars() {
-
+	public TreeSet<String> getAllVars() throws PolyException {
+		TreeSet<String> tree = new TreeSet<String>();
+		for (int i = 0; i < _terms.size(); i++) {
+			for (int j = 0; j < _terms.get(i).getVarSize(); j++) {
+				tree.add(_terms.get(i).getVar(j));
+			}
+//		for (Term t : _terms) {
+//			tree.add(t.getAllVars().toString());
+		}
+		
 		// TODO: Should not return null!
-		return null;
+		return tree;
 	}
 	
 	/** If Polynomial defines f(x,y) = 2xy^2 + xy and assignments is { x=2.0 y=3.0 } 
@@ -99,8 +129,20 @@ public class Polynomial {
 	 */
 	public double evaluate(Vector assignments) throws Exception {
 
+		double termResult = 1, finalResult = 0;
+		for (int i = 0; i < _terms.size(); i++) {
+//			for (int j = 0; j < _terms.get(i).getVarSize(); j++) {
+//				termResult *= Math.pow(assignments.get(_terms.get(i).getVar(j)), _terms.get(i).getPow(j));
+//			}
+//			termResult = _terms.get(i).getCoef() * termResult;
+//			finalResult += termResult;
+//			termResult = 1;
+			termResult *= _terms.get(i).evaluate(assignments);
+			finalResult += termResult;
+			termResult = 1;
+		}
 		// TODO: Should not return 0!
-		return 0;
+		return finalResult;
 	}
 
 	/** If Polynomial defines a function f(.) then this method returns the **symbolic**
@@ -115,10 +157,33 @@ public class Polynomial {
 	 * @param var
 	 * @return partial derivative of this w.r.t. var as a new Term
 	 */
-	public Polynomial differentiate(String var) {
-
+	public Polynomial differentiate(String var) throws PolyException {
+		Polynomial diffPoly = new Polynomial();
+		
+//		for (int i = 0; i < _terms.size(); i++) {
+//			if(_terms.get(i).differentiate(var).getCoef() != 0.0d)
+//			diffPoly._terms.add(_terms.get(i).differentiate(var));
+		for (Term t : _terms) {
+			Term dt = t.differentiate(var);
+			if (dt.getCoef() != 0.0d) {
+				diffPoly.addTerm(dt);
+			}
+//			for (int j = 0; j < _terms.get(i).getVarSize(); j++) {
+//				if (_terms.get(i).getVar(j) == var) {
+//					System.out.println("s");
+//					diffPoly._terms.get(i).changeCoef(_terms.get(i).getCoef() * _terms.get(i).getPow(j));
+//					if (_terms.get(i).getCoef() == 1) {
+//						diffPoly._terms.get(i).removeVar(j);
+//						diffPoly._terms.get(i).removePow(j);
+//					}
+//					else {
+//						diffPoly._terms.get(i).set(_terms.get(i).getVar(j), _terms.get(i).getPow(j) - 1);	
+//					}
+//				}
+//			}
+		}
 		// TODO: Should not return null!
-		return null;
+		return diffPoly;
 	}
 
 	/** Some examples testing the Polynomial and Term classes with expected output.
@@ -133,10 +198,13 @@ public class Polynomial {
 	 *         be no Exceptions/errors below)
 	 */
 	public static void main(String[] args) throws Exception {
+		Polynomial pf = Polynomial.ReadPolynomial(new File("files/poly1.txt"));
+		System.out.println(pf);
 		Polynomial p  = new Polynomial("x^2 + y^2 + -4*x*y + 8");
 		Polynomial p2 = new Polynomial(p.toString()); // See if we can reparse p.toString()
 		Polynomial dp_dx = p.differentiate("x");
 		Polynomial dp_dy = p.differentiate("y");
+		System.out.println(p2.getAllVars());
 
 		// Build a point vector (HashMap) of numerical assignments for variables
 		Vector x0 = new Vector();
@@ -145,7 +213,7 @@ public class Polynomial {
 		
 		// Test polynomial functionality
 		System.out.println("Polynomial: " + p);     // Should print "1.000*x^2 + 1.000*y^2 + -4.000*x*y + 8.000"
-		System.out.println("Re-parsed:  " + p2);    // Should print "1.000*x^2 + 1.000*y^2 + -4.000*x*y + 8.000"
+		System.out.println("Re-parsed:  " + p2);	// Should print "1.000*x^2 + 1.000*y^2 + -4.000*x*y + 8.000"
 		System.out.println("dp/dx:      " + dp_dx); // Should print "2.000*x + -4.000*y"
 		System.out.println("dp/dy:      " + dp_dy); // Should print "2.000*y + -4.000*x"
 		System.out.println("Free vars:  " + p.getAllVars()); // Should print "[x, y]"

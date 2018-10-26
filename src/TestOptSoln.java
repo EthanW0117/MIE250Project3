@@ -1,5 +1,6 @@
 import java.io.File;
 
+import soln.poly.Term;
 import soln.opt.Minimizer;
 import soln.poly.Polynomial;
 import soln.util.Vector;

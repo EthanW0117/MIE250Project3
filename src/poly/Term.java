@@ -1,6 +1,7 @@
 package poly;
 
 import java.util.ArrayList;
+
 import java.util.TreeSet;
 
 import util.Vector;
@@ -91,6 +92,8 @@ public class Term {
 			int pow = _pows.get(i);
 			sb.append("*" + var + (pow == 1 ? "" : "^" + pow));
 		}
+		if (_coef == 0)
+			return "";
 		return sb.toString();
 	}
 
@@ -110,7 +113,46 @@ public class Term {
 	// TODO: Your methods here!  You should add some helper methods that facilitate
 	//       the implementation of the methods below.
 	///////////////////////////////////////////////////////////////////////////////
+	
+	public void set(String s, Integer i) {
+		_vars.add(s);
+		_pows.add(i);
+	}
+	
+	public double getCoef() {
+		return _coef;
+	}
 
+	public void changeCoef(double newCoef) {
+		_coef = newCoef;
+	}
+	public int getVarSize() {
+		return _vars.size();
+	}
+	
+	public String getVar(int index) throws PolyException {
+		return _vars.get(index);
+	}
+	
+	public void removeVar(int index) throws PolyException {
+		_vars.remove(index);
+	}
+	
+	public int getPow(int index) throws PolyException{
+		return _pows.get(index);
+	}
+	
+	public void removePow(int index) {
+		_pows.remove(index);
+	}
+	
+	public void removeAll() {
+		_coef = 0;
+		_vars.clear();
+		_pows.clear();
+		
+	}
+	//public void changePow(int index) {
 	/** If Term defines a function f(x,y) = 2xy^2 and assignments is { x=2.0 y=3.0 } 
 	 *  then this method returns 36.0, which is the evaluation of f(2.0,3.0). 
 	 * 
@@ -119,9 +161,21 @@ public class Term {
 	 * @throws PolyException
 	 */
 	public double evaluate(Vector assignments) throws PolyException {
+		for (String s : _vars) {
+			if (!assignments.keySet().contains(s))
+				throw new PolyException ("Vector index '" + s + "' not found in " + assignments);
+		}
+		double result = 1; 
+		for (int i = 0; i < _vars.size(); i++) {
+			result *= Math.pow(assignments.get(this.getVar(i)),this.getPow(i));
+		}
+//		for (String s : _vars) {
+//			result =Math.pow(assignments.get(s), )
+//		}
+		result = _coef*result;
 
 		// TODO: Should not return 0!
-		return 0;
+		return result;
 	}
 
 	/** If Term defines a function f(.) then this method returns the **symbolic**
@@ -136,9 +190,59 @@ public class Term {
 	 * @param var
 	 * @return partial derivative of this w.r.t. var as a new Term
 	 */
-	public Term differentiate(String var) {
-
+	public Term differentiate(String var) throws PolyException {
+		
+		Term diffTerm = new Term(_coef);
+//		Term diffTerm = new Term(this.toString());
+//		diffTerm._vars = this._vars;
+//		diffTerm._pows = this._pows;
+		if (this._vars.contains(var)) {
+			for (int i = 0; i < this._vars.size(); i++) {
+				if(this._vars.get(i).equals(var)) {
+					diffTerm._coef = this._coef*(this._pows.get(i));
+//					if (this._pows.get(i) == 1) {
+//						diffTerm._vars.remove(i);
+//						diffTerm._pows.remove(i);
+//					}
+//					else {
+//						diffTerm._pows.set(i, this.getPow(i)-1);
+					if(this.getPow(i) == 1);
+					else {
+						diffTerm._vars.add(this._vars.get(i));
+						diffTerm._pows.add(this._pows.get(i) - 1);
+					}
+				}
+				else {
+					diffTerm._vars.add(this.getVar(i));
+					diffTerm._pows.add(this.getPow(i));
+				}
+				
+			}
+//				}
+//			}
+		}
+		else {
+			diffTerm._coef = 0.0d;
+//			diffTerm.removeAll();
+		}
 		// TODO: Should not return null!
-		return null;
+		return diffTerm;
+
+}
+	public static void main(String[] args) throws PolyException {
+		Term t = new Term(1.0);
+		t.set("x",1);
+		t.set("y",2);
+		Vector x0 = new Vector();
+		x0.set("x", 2.0);
+		x0.set("y", 3.0);
+		System.out.println(t.evaluate(x0));
+		System.out.println(t);
+		System.out.println(t.differentiate("y"));
+		System.out.println(t.getAllVars());
+		
+		
 	}
+	
+
 }

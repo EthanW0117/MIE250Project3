@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import poly.Polynomial;
 import util.Vector;
+import util.VectorException;
 
 /** The main optimization package: see project handout for functionality and definitions
  *  of terminology defined here.
@@ -36,6 +37,7 @@ public class Minimizer {
 		_stepSize = 0.05;
 		_x0 = new Vector();
 		_lastx = new Vector();
+		_var2gradp = new HashMap<String,Polynomial>();
 	}
 	
 	// Getters -- we've filled these in since they are trivial
@@ -74,8 +76,17 @@ public class Minimizer {
 	 * @throws Exception
 	 */
 	public void minimize(Polynomial p) throws Exception {
-			
+		
 		// TODO: Build the partial derivatives of p for all variables in p
+		//HashMap<String,Polynomial> diffP = new HashMap<String,Polynomial>();
+		for (String diffVar : p.getAllVars()) {
+			_var2gradp.put(diffVar, p.differentiate(diffVar));
+		}
+		for (String s : _x0.keySet()) {
+			if (!_var2gradp.containsKey(s)) {
+				throw new VectorException ("Vector index'" + s + "' not found in " + _var2gradp);
+			}
+		}
 		
 		// Start the gradient descent
 		_nIter = 0;
@@ -97,7 +108,17 @@ public class Minimizer {
 		//	  print iteration number, new point, objective at new point, i.e.
 		//      System.out.format("At iteration %d: %s objective value = %.3f\n", _nIter, _lastx, _lastObjVal);
 		//	}
-			
+		while (_nIter <= _maxIter && _lastGradNorm > _eps) {
+			_nIter++;
+			Vector gradientV = new Vector();
+			for (String diffVar : p.getAllVars()) {
+				gradientV.set(diffVar, _var2gradp.get(diffVar).evaluate(_lastx));
+				_lastx.set(diffVar,_lastx.get(diffVar) - _stepSize * gradientV.get(diffVar));
+			}
+			_lastGradNorm = gradientV.computeL2Norm();
+			_lastObjVal = p.evaluate(_lastx);
+			System.out.format("At iteration %d: %s objective value = %.3f\n", _nIter, _lastx, _lastObjVal);
+		}
 		// Record the end time
 		_compTime = System.currentTimeMillis()-start;
 	}
@@ -160,7 +181,7 @@ public class Minimizer {
 		// ===============================================
 		
 		// [Optional] View the cached gradient expressions if you've cached them
-		// for (String var : p.getAllVars())
-		//	  System.out.println("Gradient of " + var + " is " + m._var2gradp.get(var));
+		 for (String var : p.getAllVars())
+			  System.out.println("Gradient of " + var + " is " + m._var2gradp.get(var));
 	}
 }
