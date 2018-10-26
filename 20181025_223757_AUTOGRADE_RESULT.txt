@@ -1,0 +1,8 @@
+FailedTestCases:
+test12: Minimizer identity learn rate oscillates indefinitely
+test13: Minimizer large learn rate diverge with max iteration reached
+
+
+Your grade for this assignment: 7.0 out of 8.0
+If you think there is a grading mistake,
+Please consult the TA during office hours.
