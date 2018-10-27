@@ -1,0 +1,15 @@
+FailedTestCases:
+test12: Minimizer identity learn rate oscillates indefinitely
+test13: Minimizer large learn rate diverge with max iteration reached
+
+
+PLEASE IGNORE THIS FILE IF YOU DID NOT SUBMIT LATE.
+Everyone gets marked for late submission.
+This is a late submission automarker.
+finalGrade = max(earlyGrade, lateGrade)
+Your grade before deduction: 7.0
+Your late grade after 30 percent late submission deduction: 4.9
+Late Grade Calculation Formula: late_grade = (0.7*grade_before_deduction)
+Your grade for this assignment: 4.9 out of 8.0
+If you think there is a grading mistake,
+Please consult the TA during office hours.
